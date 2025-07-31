@@ -1,0 +1,36 @@
+.dot-grid-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.dot-grid-layer {
+    width: 200%;
+    height: 100%;
+    background-image: radial-gradient(currentColor 1.5px, transparent 0);
+    background-size: 40px 40px;
+    animation: moveDots 30s linear infinite;
+    opacity: 0.05;
+    color: black;
+}
+
+@keyframes moveDots {
+    0% {
+        transform: translateX(0%);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* Optional: Support dark mode */
+.dark .dot-grid-layer {
+    color: white;
+    opacity: 0.07;
+}
