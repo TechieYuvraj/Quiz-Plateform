@@ -1,7 +1,7 @@
 import express from 'express';
 import { sendOtp, verifyAndRegister, sendLoginOtp, verifyLoginOtp, getUserProfile, logoutUser } from '../controllers/User.controller.js';
 import { verifyToken } from '../middleware/verifyToken.middleware.js';
-import { getTodayQuiz } from '../controllers/quizController.js';
+import { getTodayQuizByIndex, AddAttemptAndGetAnswerByIndex } from '../controllers/quizController.js';
 
 const router = express.Router();
 
@@ -12,7 +12,8 @@ router.post('/login', verifyLoginOtp);
 router.post('/logout', logoutUser);
 
 router.get('/profile', verifyToken, getUserProfile);
-router.get('/quiz/today', verifyToken, getTodayQuiz);
+router.post('/quiz/today', verifyToken, getTodayQuizByIndex);
+router.post('/quiz/attempt', verifyToken, AddAttemptAndGetAnswerByIndex);
 // router.get('/quiz/today', getTodayQuiz);
 
 export default router;

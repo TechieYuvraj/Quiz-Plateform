@@ -133,6 +133,7 @@ export const addQuestion = async (req, res) => {
         //  redis question cache update  for today.... (WORK IN PROGRESS)
         const today = date.trim();
         const questionsForToday = await Question.find({ date: today });
+        // console.log(`quiz:${today}`)
         await redis.set(`quiz:${today}`, JSON.stringify(questionsForToday));
 
         res.status(201).json({ message: "Question added successfully", question });
