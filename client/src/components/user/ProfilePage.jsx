@@ -26,7 +26,7 @@ export default function ProfilePage() {
             dispatch(login(res.data.user))
             setUser(res.data.user);
         } catch (err) {
-            console.error(err);
+            // console.table("ERROR: ",err);
             toast.error(err?.response?.data?.message || "Failed to fetch profile");
             dispatch(logout())
             setTimeout(() => {
@@ -40,6 +40,12 @@ export default function ProfilePage() {
     useEffect(() => {
         fetchProfile();
     }, []);
+
+    const go_to_quize_page = () => {
+        // const userId = user._id
+        // console.log(userId)
+        navi(`/${user._id}/${0}`)
+    }
 
     if (loading) {
         return (
@@ -71,7 +77,7 @@ export default function ProfilePage() {
                     <p><b>College:</b> {user.college}</p>
                     <p><b>Course:</b> {user.course}</p>
                     <p><b>Year:</b> {user.year}</p>
-                    <Button onClick={() => { navi("/quiz") }} className="bg-green-500 text-black">Start Quiz</Button>
+                    <Button onClick={go_to_quize_page} className="bg-green-500 text-black">Start Quiz</Button>
                 </CardContent>
             </Card>
         </div>

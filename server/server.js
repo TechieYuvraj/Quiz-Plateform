@@ -5,6 +5,7 @@ import connectDB from './config/db.js';
 import cookieParser from 'cookie-parser';
 import userRoutes from './routes/user.route.js';
 import adminRoutes from './routes/admin.route.js'
+import { one_day_question_update_CRON } from './utils/cron/question.cron.js';
 
 dotenv.config();
 const app = express();
@@ -34,6 +35,8 @@ connectDB()
         console.error(`Error server.js :::> ${error}`);
         process.exit(1);
     });
+
+one_day_question_update_CRON()
 
 app.get("/", (req, res) => {
     res.send("hello CG quiz :)");
