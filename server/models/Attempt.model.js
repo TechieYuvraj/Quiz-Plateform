@@ -15,7 +15,7 @@ const attemptSchema = new mongoose.Schema({
     },
     answer: {
         type: String,            //  Can be MCQ option ("A", "B", etc) or full text for descriptive
-        required: true,
+        default: ""
     },
     date: {
         type: String,            // Format: "YYYY-MM-DD"

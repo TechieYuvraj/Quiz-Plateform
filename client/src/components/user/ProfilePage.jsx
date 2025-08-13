@@ -1,45 +1,43 @@
-import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
-import API from "../../../axios.config";
-import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { login } from "@/redux/slices/authSlice";
-import { logout } from "@/redux/slices/authSlice";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react" 
+import { Card, CardContent } from "@/components/ui/card" 
+import { Loader2 } from "lucide-react" 
+import API from "../../../axios.config" 
+import { toast } from "sonner" 
+import { useNavigate } from "react-router-dom" 
+import { useDispatch } from "react-redux" 
+import { login } from "@/redux/slices/authSlice" 
+import { logout } from "@/redux/slices/authSlice" 
+import { Button } from "@/components/ui/button" 
 
-import { ThemeToggle } from "../ThemeToggle";
-
-
+import { ThemeToggle } from "../ThemeToggle" 
 
 export default function ProfilePage() {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(null) 
+    const [loading, setLoading] = useState(true) 
     const navi = useNavigate()
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() 
 
     const fetchProfile = async () => {
         try {
-            const res = await API.get("/api/user/profile");
-            console.log(res.data.user)
+            const res = await API.get("/api/user/profile") 
+            // console.log(res.data.user)
             dispatch(login(res.data.user))
-            setUser(res.data.user);
+            setUser(res.data.user) 
         } catch (err) {
-            // console.table("ERROR: ",err);
-            toast.error(err?.response?.data?.message || "Failed to fetch profile");
+            // console.table("ERROR: ",err) 
+            toast.error(err?.response?.data?.message || "Failed to fetch profile") 
             dispatch(logout())
             setTimeout(() => {
                 navi("/login")
-            }, 3000);
+            }, 3000) 
         } finally {
-            setLoading(false);
+            setLoading(false) 
         }
-    };
+    } 
 
     useEffect(() => {
-        fetchProfile();
-    }, []);
+        fetchProfile() 
+    }, []) 
 
     const go_to_quize_page = () => {
         // const userId = user._id
@@ -53,7 +51,7 @@ export default function ProfilePage() {
                 <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                 <span className="ml-2 text-muted-foreground">Loading...</span>
             </div>
-        );
+        ) 
     }
 
     if (!user) {
@@ -61,7 +59,7 @@ export default function ProfilePage() {
             <div className="min-h-screen flex items-center justify-center">
                 <p className="text-red-500">User not found or not logged in</p>
             </div>
-        );
+        ) 
     }
 
     return (
@@ -81,5 +79,5 @@ export default function ProfilePage() {
                 </CardContent>
             </Card>
         </div>
-    );
+    ) 
 }
