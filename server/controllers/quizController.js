@@ -84,14 +84,11 @@ export const getTodayQuizByIndex = async (req, res) => {
     }
 }
 
-
-
-
-
 export const AddAttemptAndGetAnswerByIndex = async (req, res) => {
     try {
         const { userId, questionId, answer, timeTaken, index } = req.body
-        // console.log("ANSWER: ", answer)
+        console.log("ANSWER: ", answer)
+        console.log("ANSWER: ", req.body)
 
         if (!userId || !questionId || answer === undefined || index === undefined) {
             return res.status(400).json({ message: "Missing required fields." })
@@ -109,7 +106,7 @@ export const AddAttemptAndGetAnswerByIndex = async (req, res) => {
             question: questionId,
             answer,
             date: indianDate,
-            timeTaken: timeTaken || 0
+            timeTaken: timeTaken + 1 || 0
         })
 
         const redisKey = `quiz:${indianDate}`
