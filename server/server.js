@@ -9,7 +9,6 @@ import { one_day_question_update_CRON } from './utils/cron/question.cron.js';
 
 dotenv.config();
 const app = express();
-
 app.use(cors({
     origin: ["http://localhost:5173"],
     credentials: true,
