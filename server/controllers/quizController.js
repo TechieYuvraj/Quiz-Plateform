@@ -86,12 +86,10 @@ export const getTodayQuizByIndex = async (req, res) => {
 
 export const AddAttemptAndGetAnswerByIndex = async (req, res) => {
     try {
-        const { userId, questionId, answer, timeTaken, index } = req.body
-        console.log("ANSWER: ", answer)
-        console.log("ANSWER: ", req.body)
+        const { userId, questionId, answer, timeTaken, index } = req.body;
 
         if (!userId || !questionId || answer === undefined || index === undefined) {
-            return res.status(400).json({ message: "Missing required fields." })
+            return res.status(400).json({ message: "Missing required fields." });
         }
 
         const indianDate = new Intl.DateTimeFormat("en-CA", {
@@ -99,29 +97,36 @@ export const AddAttemptAndGetAnswerByIndex = async (req, res) => {
             month: "2-digit",
             day: "2-digit",
             timeZone: "Asia/Kolkata"
-        }).format(new Date())
+        }).format(new Date());
 
-        await Attempt.create({
+        const redisKey = `quiz:${indianDate}`;
+        const cached = await redis.get(redisKey);
+        const questions = JSON.parse(cached);
+
+        if (!questions || !questions.length) {
+            return res.status(404).json({ message: "No quiz found for today." });
+        }
+
+        if (index >= questions.length) {
+            return res.status(404).json({ message: "Question index out of bounds." });
+        }
+
+        const currentQuestion = questions[index];
+        const correctAnswer = currentQuestion?.correctAnswer ?? null;
+
+        const attemptData = {
             user: userId,
             question: questionId,
             answer,
             date: indianDate,
             timeTaken: timeTaken + 1 || 0
-        })
+        };
 
-        const redisKey = `quiz:${indianDate}`
-        const cached = await redis.get(redisKey)
-        const questions = JSON.parse(cached)
-
-        if (!questions || !questions.length) {
-            return res.status(404).json({ message: "No quiz found for today." })
+        if (currentQuestion?.type === "descriptive") {
+            attemptData.isCorrect = "p"; // pending
         }
 
-        if (index >= questions.length) {
-            return res.status(404).json({ message: "Question index out of bounds." })
-        }
-
-        const correctAnswer = questions[index]?.correctAnswer ?? null
+        await Attempt.create(attemptData);
 
         return res.status(200).json({
             message: "Attempt recorded successfully.",
@@ -129,10 +134,11 @@ export const AddAttemptAndGetAnswerByIndex = async (req, res) => {
         })
 
     } catch (err) {
-        console.error("Error in AddAttemptAndGetAnswerByIndex:", err.message)
-        return res.status(500).json({ message: "Server error while saving attempt." })
+        console.error("Error in AddAttemptAndGetAnswerByIndex:", err.message);
+        return res.status(500).json({ message: "Server error while saving attempt." });
     }
 }
+
 
 
 export const getTodayQuizSummary = async (req, res) => {

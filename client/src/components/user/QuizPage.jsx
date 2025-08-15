@@ -103,7 +103,7 @@ export default function QuizPage() {
                 userId,
                 questionId: question._id,
                 answer: selectedAnswer ?? "",
-                timeTaken: (question.timeWindow || 20) - timeLeft +1,
+                timeTaken: (question.timeWindow || 20) - timeLeft,
                 index: currentIndex
             })
 
