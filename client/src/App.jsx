@@ -13,7 +13,8 @@ const AdminLogin = lazy(() => import('./components/ad/AdminLogin.jsx'));
 const AdminProfile = lazy(() => import('./components/ad/AdminProfile.jsx'));
 const AdminDashboard = lazy(() => import('./components/ad/AdminDashboard.jsx'));
 const CreateQuiz = lazy(() => import('./components/ad/CreateQuiz.jsx'));
-const ManageQuestions = lazy(() => import('./components/ad/ManageQuestions.jsx')); //ManageQuestions
+const ManageQuestions = lazy(() => import('./components/ad/ManageQuestions.jsx'));
+const ViewResults = lazy(() => import('./components/ad/ViewResults.jsx')); //ViewResults
 
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx'; //ProtectedAdminRoute
 import ProtectedAdminRoute from './components/auth/ProtectedAdminRoute.jsx'; //ProtectedAdminRoute
@@ -48,6 +49,7 @@ function App() {
                 <Route path="admin/dashboard" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
                 <Route path="/admin/create-quiz" element={<ProtectedAdminRoute><CreateQuiz /></ProtectedAdminRoute>} />
                 <Route path="/admin/manage-questions" element={<ProtectedAdminRoute><ManageQuestions /></ProtectedAdminRoute>} />
+                <Route path="/admin/results" element={<ProtectedAdminRoute><ViewResults /></ProtectedAdminRoute>} />
             </Routes>
         </Suspense>
     );

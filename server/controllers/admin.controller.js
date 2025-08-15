@@ -377,3 +377,183 @@ export const editQuestion = async (req, res) => {
         res.status(500).json({ message: "Failed to edit question" });
     }
 };
+
+
+// complex stuff
+export const viewResultPageDetails = async (req, res) => {
+    try {
+        let { date, search = "", page = 1, limit = 10 } = req.query;
+
+        if (!date) {
+            return res.status(400).json({ message: "Date is required" });
+        }
+
+        page = parseInt(page);
+        limit = parseInt(limit);
+
+        const matchStage = { date };
+
+        const pipeline = [
+            { $match: matchStage },
+
+            // Get user details
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "user",
+                    foreignField: "_id",
+                    as: "userDetails"
+                }
+            },
+            { $unwind: "$userDetails" },
+
+            // Get question details
+            {
+                $lookup: {
+                    from: "questions",
+                    localField: "question",
+                    foreignField: "_id",
+                    as: "questionDetails"
+                }
+            },
+            { $unwind: "$questionDetails" },
+
+            // Optional search filter by name
+            {
+                $match: search
+                    ? { "userDetails.name": { $regex: search, $options: "i" } }
+                    : {}
+            },
+
+            // Group by user
+            {
+                $group: {
+                    _id: "$user",
+                    userDetails: { $first: "$userDetails" },
+                    attempts: { $push: "$$ROOT" }
+                }
+            }
+        ];
+
+        const groupedResults = await Attempt.aggregate(pipeline);
+
+        const scoredResults = groupedResults.map((userData) => {
+            let score = 0;
+            let totalQuestions = userData.attempts.length;
+
+            userData.attempts.forEach((attempt) => {
+                const q = attempt.questionDetails;
+
+                if (q.type === "mcq") {
+                    const correctIndex = Number(q.correctAnswer);
+                    if (Number(attempt.answer) === correctIndex) {
+                        score += 4;
+                        if (attempt.timeTaken > 0 && q.timeWindow > 0) {
+                            let bonus = Math.max(0, 2 - attempt.timeTaken / q.timeWindow);
+                            score += bonus;
+                        }
+                    }
+                } else if (q.type === "descriptive") {
+                    if (attempt.isCorrect === "r") {
+                        score += 4;
+                        if (attempt.timeTaken > 0 && q.timeWindow > 0) {
+                            let bonus = Math.max(0, 2 - attempt.timeTaken / q.timeWindow);
+                            score += bonus;
+                        }
+                    }
+                }
+            });
+
+            // Now denominator is totalQuestions * 6
+            const percentage = totalQuestions > 0
+                ? ((score / (totalQuestions * 6)) * 100).toFixed(2)
+                : "0.00";
+
+            return {
+                userId: userData._id,
+                name: userData.userDetails.name,
+                score: Number(score.toFixed(2)),
+                percentage: Number(percentage),
+                totalQuestions
+            };
+        });
+
+        // Sort by score desc, then percentage desc
+        scoredResults.sort((a, b) => {
+            if (b.score === a.score) return b.percentage - a.percentage;
+            return b.score - a.score;
+        });
+
+        // Assign ranks
+        scoredResults.forEach((item, index) => {
+            item.rank = index + 1;
+        });
+
+        // Pagination
+        const totalResults = scoredResults.length;
+        const paginatedResults = scoredResults.slice((page - 1) * limit, page * limit);
+
+        res.status(200).json({
+            date,
+            results: paginatedResults,
+            totalResults,
+            currentPage: page,
+            totalPages: Math.ceil(totalResults / limit)
+        });
+    } catch (err) {
+        console.error("Error fetching quiz results:", err.message);
+        res.status(500).json({ message: "Failed to fetch quiz results" });
+    }
+};
+
+
+
+
+
+export const viewStudentAnswers = async (req, res) => {
+    try {
+        const { date, userId } = req.query;
+
+        if (!date || !userId) {
+            return res.status(400).json({ message: "Date and userId are required" });
+        }
+
+        // Fetch the attempt document for that student and date
+        const attemptDoc = await Attempt.findOne({ userId, date });
+        if (!attemptDoc) {
+            return res.status(404).json({ message: "No attempts found for this user on this date" });
+        }
+
+        // Get all question IDs from attempts
+        const questionIds = attemptDoc.attempts.map(a => a.questionId);
+
+        // Fetch the actual questions
+        const questions = await Question.find({ _id: { $in: questionIds } });
+
+        // Build detailed answer data
+        const detailedAnswers = attemptDoc.attempts.map((a) => {
+            const question = questions.find(q => q._id.toString() === a.questionId.toString());
+            return {
+                questionId: question?._id,
+                questionText: question?.text,
+                options: question?.type === "mcq" ? question?.options : undefined,
+                type: question?.type,
+                userAnswer: a.answer,
+                correctAnswer: question?.correctAnswer,
+                isCorrect: a.isCorrect, // "r" = right, "w" = wrong, "p" = pending
+                timeTaken: a.timeTaken
+            };
+        });
+
+        res.status(200).json({
+            date,
+            userId,
+            name: attemptDoc.userName, // If stored in Attempt
+            answers: detailedAnswers
+        });
+
+    } catch (err) {
+        console.error("Error fetching student answers:", err.message);
+        res.status(500).json({ message: "Failed to fetch student answers" });
+    }
+};
