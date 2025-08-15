@@ -4,7 +4,7 @@ import Question from "../../models/Question.model.js";
 
 // Schedule: Run every day at 12:01 AM
 export async function one_day_question_update_CRON() {
-    cron.schedule("16 0 * * *", async () => { // will change cron expression to 1 0 * * * for 12:01 am
+    cron.schedule("1 0 * * *", async () => { // will change cron expression to 1 0 * * * for 12:01 am
         try {
             const today = new Intl.DateTimeFormat("en-CA", {
                 year: "numeric",

@@ -33,6 +33,7 @@ export default function QuizSummary() {
             <h2 className="text-2xl font-bold mb-6">Quiz Summary</h2>
 
             {summary.map((item, idx) => {
+                // console.log(item)
                 const isMCQ = item.type === "mcq" 
                 const isCorrect = isMCQ && item.userAnswer === item.correctAnswer 
 
@@ -75,6 +76,7 @@ export default function QuizSummary() {
                                 }
                             >
                                 {isMCQ ? item.correctAnswer : "N/A"}
+                                {/* {isMCQ ? item.correctAnswer : item.correctAnswer} */}
                             </span>
                         </p>
                     </div>

@@ -3,29 +3,34 @@ import mongoose from "mongoose";
 const attemptSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",             //Refers to the user who submitted the answer
+        ref: "User",
         required: true,
         index: true
     },
     question: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Question",         //  Refers to the question being answered
+        ref: "Question",
         required: true,
         index: true
     },
     answer: {
-        type: String,            //  Can be MCQ option ("A", "B", etc) or full text for descriptive
+        type: String,
         default: ""
     },
     date: {
-        type: String,            // Format: "YYYY-MM-DD"
+        type: String, // "YYYY-MM-DD"
         required: true,
     },
     timeTaken: {
-        type: Number,            // How long the user took to answer, in seconds
+        type: Number,
         default: 0,
     },
-}, { timestamps: true });    //Adds createdAt and updatedAt automatically
+    isCorrect: {
+        type: String,
+        enum: ['p', 'r', 'w'],
+        default: undefined // only for descriptive
+    }
+}, { timestamps: true });
 
 const Attempt = mongoose.model("Attempt", attemptSchema);
-export default Attempt
+export default Attempt;

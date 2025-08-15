@@ -7,7 +7,16 @@ const LoginForm = lazy(() => import('./components/user/LoginForm.jsx'));
 const Test = lazy(() => import('./components/user/Test.jsx'));
 const QuizPage = lazy(() => import('./components/user/QuizPage.jsx'));
 const QuizSummery = lazy(() => import('./components/user/QuizSummery.jsx'));
-import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
+
+const AdminRegister = lazy(() => import('./components/ad/AdminRegister.jsx'));
+const AdminLogin = lazy(() => import('./components/ad/AdminLogin.jsx'));
+const AdminProfile = lazy(() => import('./components/ad/AdminProfile.jsx'));
+const AdminDashboard = lazy(() => import('./components/ad/AdminDashboard.jsx'));
+const CreateQuiz = lazy(() => import('./components/ad/CreateQuiz.jsx'));
+const ManageQuestions = lazy(() => import('./components/ad/ManageQuestions.jsx')); //ManageQuestions
+
+import ProtectedRoute from './components/auth/ProtectedRoute.jsx'; //ProtectedAdminRoute
+import ProtectedAdminRoute from './components/auth/ProtectedAdminRoute.jsx'; //ProtectedAdminRoute
 
 
 function App() {
@@ -33,6 +42,12 @@ function App() {
                 <Route path="/quiz/summary" element={<ProtectedRoute><QuizSummery /></ProtectedRoute>} />
 
 
+                <Route path="admin/register" element={<AdminRegister />} />
+                <Route path="admin/login" element={<AdminLogin />} />
+                <Route path="admin/profile" element={<AdminProfile />} />
+                <Route path="admin/dashboard" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+                <Route path="/admin/create-quiz" element={<ProtectedAdminRoute><CreateQuiz /></ProtectedAdminRoute>} />
+                <Route path="/admin/manage-questions" element={<ProtectedAdminRoute><ManageQuestions /></ProtectedAdminRoute>} />
             </Routes>
         </Suspense>
     );

@@ -2,61 +2,112 @@ import Admin from "../models/Admin.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import Question from "../models/Question.model.js";
+import User from "../models/User.model.js"
 import redis from "../utils/redis.util.js";
+import Attempt from "../models/Attempt.model.js";
 
 export const registerAdmin = async (req, res) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, secretKey } = req.body;
 
     try {
         const existing = await Admin.findOne({ email });
-        if (existing) return res.status(400).json({ message: "Admin already exists" });
+        if (existing) {
+            return res.status(400).json({ message: "Admin already exists" });
+        }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        let finalRole;
 
-        const admin = await Admin.create({
+        if (role === "superadmin") {
+            // Superadmin creation requires secret key
+            if (secretKey !== process.env.ADMIN_REGISTRATION_KEY) {
+                return res.status(403).json({ message: "Invalid secret key for superadmin registration" });
+            }
+            finalRole = "superadmin";
+        }
+        else if (role === "moderator") {
+            const token = req.cookies?.ASTID;
+            if (!token) {
+                return res.status(403).json({ message: "Only a logged-in superadmin can create moderators" });
+            }
+
+            let decoded;
+            try {
+                decoded = jwt.verify(token, process.env.JWT_SECRET);
+            } catch (err) {
+                return res.status(403).json({ message: "Invalid or expired superadmin token" });
+            }
+
+            const admin = await Admin.findById(decoded.id);
+            if (!admin || admin.role !== "superadmin") {
+                return res.status(403).json({ message: "Only a superadmin can create moderators" });
+            }
+            finalRole = "moderator";
+        }
+        else {
+            return res.status(400).json({ message: "Invalid role specified" });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10)
+        const newAdmin = await Admin.create({
             name,
             email,
             password: hashedPassword,
-            role: role || 'moderator',
-        });
+            role: finalRole,
+        })
 
-        const ASTID = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+        const ASTID = jwt.sign(
+            { id: newAdmin._id, role: newAdmin.role },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        )
 
         res.cookie("ASTID", ASTID, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "Strict",
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        });
+        })
 
         res.status(201).json({
-            message: "Admin registered successfully",
-            adminId: admin._id,
-            role: admin.role,
+            message: `${finalRole} registered successfully`,
+            adminId: newAdmin._id,
+            role: newAdmin.role,
         });
 
     } catch (err) {
-        console.error(err);
+        console.error("Error registering admin:", err);
         res.status(500).json({ message: "Registration failed" });
     }
-};
+}
+
 
 export const loginAdmin = async (req, res) => {
-    const { email, password } = req.body;
+    const { identifier, password, rememberMe } = req.body;
     try {
-        const admin = await Admin.findOne({ email });
+        // Match either email or name
+        const admin = await Admin.findOne({
+            $or: [{ email: identifier }, { name: identifier }]
+        });
+
         if (!admin) return res.status(404).json({ message: "Admin not found" });
+
         const isMatch = await bcrypt.compare(password, admin.password);
         if (!isMatch) return res.status(401).json({ message: "Invalid password" });
-        const ASTID = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, {
-            expiresIn: "7d",
+
+        // If rememberMe is true → 30 days, else 7 days
+        const expiryDays = rememberMe ? 30 : 7;
+
+        const ASTID = jwt.sign({ id: admin._id, role: admin.role }, process.env.JWT_SECRET, {
+            expiresIn: `${expiryDays}d`,
         });
+
         res.cookie("ASTID", ASTID, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "Strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            maxAge: expiryDays * 24 * 60 * 60 * 1000, // in ms
         });
+
         res.status(200).json({
             message: "Login successful",
             adminId: admin._id,
@@ -67,6 +118,24 @@ export const loginAdmin = async (req, res) => {
         res.status(500).json({ message: "Login failed" });
     }
 };
+
+export const getAdminProfile = async (req, res) => {
+    try {
+        // req.admin from miiddleware
+        const admin = req.admin;
+
+        res.status(200).json({
+            name: admin.name,
+            email: admin.email,
+            role: admin.role,
+            createdAt: admin.createdAt,
+        });
+    } catch (err) {
+        console.error("Error fetching admin profile:", err);
+        res.status(500).json({ message: "Failed to fetch admin profile" });
+    }
+};
+
 
 // export const addQuestion = async (req, res) => {                        // we add htis later if needed
 
@@ -99,8 +168,6 @@ export const loginAdmin = async (req, res) => {
 //         res.status(500).json({ message: "Server error" });
 //     }
 // };
-
-
 
 export const addQuestion = async (req, res) => {
     try {
@@ -140,5 +207,173 @@ export const addQuestion = async (req, res) => {
     } catch (err) {
         console.error("Add question error:", err.message);
         res.status(500).json({ message: "Server error" });
+    }
+};
+
+export const getDashboardStats = async (req, res) => {
+    try {
+        // Format today's date in India timezone
+        const indianDate = new Intl.DateTimeFormat('en-CA', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            timeZone: 'Asia/Kolkata'
+        }).format(new Date());
+
+        // Fetch today's quizzes from Redis or DB
+        const redisKey = `quiz:${indianDate}`;
+        let questions = await redis.get(redisKey);
+
+        if (questions) {
+            console.log("Fetched today's quizzes from Redis");
+            questions = JSON.parse(questions);
+        } else {
+            console.log("Redis empty, fetching today's quizzes from DB");
+            questions = await Question.find({ date: indianDate });
+
+            if (questions.length > 0) {
+                await redis.set(redisKey, JSON.stringify(questions));
+            }
+        }
+
+        const totalUsers = await User.countDocuments();
+
+        const pendingReviews = await Attempt.countDocuments({
+            date: indianDate,
+            isCorrect: "p" // pending
+        });
+
+        res.status(200).json({
+            date: indianDate,
+            todaysQuizzes: questions.length,
+            totalUsers,
+            pendingReviews,
+            // quizzes: questions
+        });
+
+    } catch (err) {
+        console.error("Error fetching dashboard stats:", err.message);
+        res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    }
+};
+
+
+//  imp stuff
+
+// controllers/admin.controller.js
+
+export const getAllQuestions = async (req, res) => {
+    try {
+        let { page = 1, limit = 10, type, search, date } = req.query;
+
+        page = parseInt(page);
+        limit = parseInt(limit);
+
+        const query = {};
+
+        // Filter by type
+        if (type && ["mcq", "descriptive"].includes(type.toLowerCase())) {
+            query.type = type.toLowerCase();
+        }
+
+        // Filter by date (YYYY-MM-DD)
+        if (date) {
+            query.date = date;
+        }
+
+        // Search by question text (case-insensitive)
+        if (search) {
+            query.text = { $regex: search, $options: "i" };
+        }
+
+        const total = await Question.countDocuments(query);
+        const questions = await Question.find(query)
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        res.status(200).json({
+            questions,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
+            totalQuestions: total
+        });
+
+    } catch (err) {
+        console.error("Error fetching questions:", err.message);
+        res.status(500).json({ message: "Failed to fetch questions" });
+    }
+};
+
+// controllers/admin.controller.js
+export const deleteQuestion = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Find and delete in one go
+        const question = await Question.findByIdAndDelete(id);
+
+        if (!question) {
+            return res.status(404).json({ message: "Question not found" });
+        }
+
+        // Invalidate cache for that date (if exists)
+        const redisKey = `quiz:${question.date}`;
+        const cached = await redis.get(redisKey);
+        if (cached) {
+            let arr = JSON.parse(cached);
+            arr = arr.filter(q => q._id.toString() !== id);
+            await redis.set(redisKey, JSON.stringify(arr));
+        }
+
+        res.status(200).json({ message: "Question deleted successfully" });
+
+    } catch (err) {
+        console.error("Error deleting question:", err.message);
+        res.status(500).json({ message: "Failed to delete question" });
+    }
+};
+
+export const editQuestion = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { type, text, options, correctAnswer, date, timeWindow } = req.body;
+
+        // Validate inputs (basic check)
+        if (!type || !text || !date) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
+
+        // Update question in DB
+        const updatedQuestion = await Question.findByIdAndUpdate(
+            id,
+            { type, text, options, correctAnswer, date, timeWindow },
+            { new: true }
+        );
+
+        if (!updatedQuestion) {
+            return res.status(404).json({ message: "Question not found" });
+        }
+
+        // Update Redis cache if exists
+        const redisKey = `quiz:${date}`;
+        const cached = await redis.get(redisKey);
+        if (cached) {
+            let arr = JSON.parse(cached);
+            const index = arr.findIndex(q => q._id.toString() === id);
+            if (index !== -1) {
+                arr[index] = updatedQuestion;
+                await redis.set(redisKey, JSON.stringify(arr));
+            }
+        }
+
+        res.status(200).json({
+            message: "Question updated successfully",
+            question: updatedQuestion
+        });
+
+    } catch (err) {
+        console.error("Error editing question:", err.message);
+        res.status(500).json({ message: "Failed to edit question" });
     }
 };
