@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,7 @@ export default function ViewResults() {
 
     const [viewingAnswers, setViewingAnswers] = useState(null); // { name, answers: [] }
     const [loadingAnswers, setLoadingAnswers] = useState(false);
+    const selectedUserIdRef = useRef(null); // Add this line
 
     const fetchResults = async (pageNum = 1) => {
         if (!date) {
@@ -25,11 +26,12 @@ export default function ViewResults() {
 
         try {
             setLoading(true);
-            console.log(`Fetching results for date: ${date}, search: ${search}, page: ${pageNum}`);
+            // console.log(`Fetching results for date: ${date}, search: ${search}, page: ${pageNum}`);
             const res = await API.get(
                 `/api/admin/results?date=${date}&search=${search}&page=${pageNum}&limit=${limit}`,
                 { withCredentials: true }
             );
+            // console.log(res.data)
             setResults(res.data.results || []);
             setPage(res.data.currentPage || 1);
             setTotalPages(res.data.totalPages || 1);
@@ -42,6 +44,7 @@ export default function ViewResults() {
 
     const fetchAnswers = async (userId, name) => {
         try {
+            selectedUserIdRef.current = userId; // Store userId for later use
             setLoadingAnswers(true);
             const res = await API.get(
                 `/api/admin/view-answers?date=${date}&userId=${userId}`,
@@ -176,7 +179,9 @@ export default function ViewResults() {
                                             </p>
                                             <p>
                                                 <strong>Status:</strong>{" "}
-                                                {a.isCorrect === "r" ? "✅ Correct" : "❌ Wrong"}
+                                                {Number(a.userAnswer) === Number(a.correctAnswer)
+                                                    ? "✅ Correct"
+                                                    : "❌ Wrong"}
                                             </p>
                                         </>
                                     )}
@@ -189,14 +194,45 @@ export default function ViewResults() {
                                                 <Button
                                                     size="sm"
                                                     variant="secondary"
-                                                    onClick={() => toast.success("Marked Correct")}
+                                                    onClick={async () => {
+                                                        if (a.type !== "descriptive") {
+                                                            toast.error("Only descriptive answers can be marked manually");
+                                                            return;
+                                                        }
+                                                        try {
+                                                            await API.put("/api/admin/mark-descriptive", {
+                                                                userId: selectedUserIdRef.current, // Use ref here
+                                                                questionId: a.questionId,
+                                                                status: "r"
+                                                            }, { withCredentials: true });
+                                                            toast.success("Marked Correct");
+                                                        } catch (err) {
+                                                            toast.error(err.response?.data?.message || "Failed to mark");
+                                                        }
+                                                    }}
                                                 >
                                                     Mark Correct
                                                 </Button>
+
                                                 <Button
                                                     size="sm"
                                                     variant="destructive"
-                                                    onClick={() => toast.error("Marked Wrong")}
+                                                    onClick={async () => {
+                                                        if (a.type !== "descriptive") {
+                                                            toast.error("Only descriptive answers can be marked manually");
+                                                            return;
+                                                        }
+                                                        try {
+                                                            await API.put("/api/admin/mark-descriptive", {
+                                                                userId: selectedUserIdRef.current, // Use ref here
+                                                                questionId: a.questionId,
+                                                                status: "w"
+                                                            }, { withCredentials: true });
+                                                            toast.error("Marked Wrong");
+                                                        } catch (err) {
+                                                            toast.error(err.response?.data?.message || "Failed to mark");
+                                                        }
+                                                    }}
                                                 >
                                                     Mark Wrong
                                                 </Button>

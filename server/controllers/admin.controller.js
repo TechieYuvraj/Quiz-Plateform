@@ -507,9 +507,6 @@ export const viewResultPageDetails = async (req, res) => {
 };
 
 
-
-
-
 export const viewStudentAnswers = async (req, res) => {
     try {
         const { date, userId } = req.query;
@@ -518,29 +515,26 @@ export const viewStudentAnswers = async (req, res) => {
             return res.status(400).json({ message: "Date and userId are required" });
         }
 
-        // Fetch the attempt document for that student and date
-        const attemptDoc = await Attempt.findOne({ userId, date });
-        if (!attemptDoc) {
+        // Fetch all attempts for that user and date
+        const attempts = await Attempt.find({ user: userId, date })
+            .populate("question")
+            .populate("user", "name");
+
+        if (!attempts.length) {
             return res.status(404).json({ message: "No attempts found for this user on this date" });
         }
 
-        // Get all question IDs from attempts
-        const questionIds = attemptDoc.attempts.map(a => a.questionId);
-
-        // Fetch the actual questions
-        const questions = await Question.find({ _id: { $in: questionIds } });
-
         // Build detailed answer data
-        const detailedAnswers = attemptDoc.attempts.map((a) => {
-            const question = questions.find(q => q._id.toString() === a.questionId.toString());
+        const detailedAnswers = attempts.map((a) => {
+            const q = a.question;
             return {
-                questionId: question?._id,
-                questionText: question?.text,
-                options: question?.type === "mcq" ? question?.options : undefined,
-                type: question?.type,
+                questionId: q?._id,
+                questionText: q?.text,
+                options: q?.type === "mcq" ? q?.options : undefined,
+                type: q?.type,
                 userAnswer: a.answer,
-                correctAnswer: question?.correctAnswer,
-                isCorrect: a.isCorrect, // "r" = right, "w" = wrong, "p" = pending
+                correctAnswer: q?.correctAnswer,
+                isCorrect: a.isCorrect, // 'r', 'w', or 'p'
                 timeTaken: a.timeTaken
             };
         });
@@ -548,7 +542,7 @@ export const viewStudentAnswers = async (req, res) => {
         res.status(200).json({
             date,
             userId,
-            name: attemptDoc.userName, // If stored in Attempt
+            name: attempts[0].user.name,
             answers: detailedAnswers
         });
 
@@ -557,3 +551,39 @@ export const viewStudentAnswers = async (req, res) => {
         res.status(500).json({ message: "Failed to fetch student answers" });
     }
 };
+
+export const markDescriptiveAnswer = async (req, res) => {
+    try {
+        const { userId, questionId, status } = req.body; // status = "r" or "w"
+        // console.log(req.body);
+
+        if (!userId || !questionId || !["r", "w"].includes(status)) {
+            return res.status(400).json({ message: "Invalid request data" });
+        }
+
+        const attempt = await Attempt.findOne({
+            user: userId,
+            question: questionId
+        });
+
+        if (!attempt) {
+            return res.status(404).json({ message: "Attempt not found" });
+        }
+
+        // const questionDoc = await Question.findById(questionId);
+        // if (!questionDoc || questionDoc.type !== "descriptive") {
+        //     return res.status(400).json({ message: "Only descriptive answers can be marked" });
+        // }
+
+        attempt.isCorrect = status;
+        await attempt.save();
+
+        res.status(200).json({
+            message: `Answer marked as ${status === "r" ? "Correct" : "Wrong"}`
+        });
+    } catch (err) {
+        console.error("Error marking descriptive answer:", err.message);
+        res.status(500).json({ message: "Failed to update answer" });
+    }
+};
+

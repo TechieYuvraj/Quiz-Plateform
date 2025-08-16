@@ -1,6 +1,6 @@
 import express from "express";
 import verifyAdmin from "../middleware/verifyAdmin.middleware.js";
-import { loginAdmin, registerAdmin, addQuestion, getAdminProfile, getDashboardStats, getAllQuestions, deleteQuestion, editQuestion, viewResultPageDetails, viewStudentAnswers } from "../controllers/admin.controller.js";
+import { loginAdmin, registerAdmin, addQuestion, getAdminProfile, getDashboardStats, getAllQuestions, deleteQuestion, editQuestion, viewResultPageDetails, viewStudentAnswers, markDescriptiveAnswer } from "../controllers/admin.controller.js";
 
 const router = express.Router();
 
@@ -22,5 +22,6 @@ router.delete("/delete-question/:id", verifyAdmin(["superadmin", "moderator"]), 
 router.put("/edit-question/:id", verifyAdmin(["superadmin", "moderator"]), editQuestion);
 router.get("/results", verifyAdmin(["superadmin", "moderator"]), viewResultPageDetails);
 router.get("/view-answers", verifyAdmin(["superadmin", "moderator"]), viewStudentAnswers);
+router.put("/mark-descriptive", verifyAdmin(["superadmin", "moderator"]), markDescriptiveAnswer);
 
 export default router
