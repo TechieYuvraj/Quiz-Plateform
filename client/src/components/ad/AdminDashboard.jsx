@@ -38,7 +38,12 @@ export default function AdminDashboard() {
 
     return (
         <div className="max-w-5xl mx-auto mt-10 p-6">
-            <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+            <h1 className="text-3xl font-bold mb-6 flex items-center">
+                <Button variant="outline" onClick={() => navigate(`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/profile`)} className="bg-gray-200 mr-2">
+                    &lt;
+                </Button>
+                Admin Dashboard
+            </h1>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="border rounded p-4 shadow text-center">
@@ -56,16 +61,16 @@ export default function AdminDashboard() {
             </div>
 
             <div className="flex flex-wrap gap-4">
-                <Button onClick={() => navigate("/admin/create-quiz")}>
+                <Button onClick={() => navigate(`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/create-quiz`)}>
                     Create Quiz
                 </Button>
-                <Button variant="secondary" onClick={() => navigate("/admin/manage-questions")}>
+                <Button variant="secondary" onClick={() => navigate(`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/manage-questions`)}>
                     Manage Questions
                 </Button>
-                <Button variant="outline" onClick={() => navigate("/admin/results")}>
+                <Button variant="outline" onClick={() => navigate(`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/results`)}>
                     View Results
                 </Button>
             </div>
-        </div>
+        </div >
     );
 }

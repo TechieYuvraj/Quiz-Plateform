@@ -17,7 +17,7 @@ export default function ProtectedAdminRoute({ children }) {
     const isAdminLoggedIn = useSelector((state) => state.adminAuth.isAdminLoggedIn);
 
     if (!isAdminLoggedIn) {
-        return <Navigate to="/admin/login" replace />;
+        return <Navigate to={`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/login`} replace />;
     }
 
     return children;

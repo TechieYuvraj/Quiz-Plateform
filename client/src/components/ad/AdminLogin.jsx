@@ -35,7 +35,8 @@ export default function AdminLogin() {
                 { withCredentials: true }
             );
             toast.success(res.data.message || "Login successful!");
-            navigate("/admin/profile");
+            // navigate("/admin/profile");
+            navigate(`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/profile`);
         } catch (err) {
             toast.error(err.response?.data?.message || "Login failed");
         } finally {

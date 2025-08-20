@@ -71,20 +71,29 @@ export default function CreateQuiz() {
 
         try {
             setLoading(true);
+
             const payload = {
                 type: form.type,
                 text: form.text,
                 options: form.type === "mcq" ? form.options : undefined,
                 correctAnswer:
-                    form.type === "mcq" ? parseInt(form.correctAnswer) : undefined,
+                    form.type === "mcq"
+                        ? parseInt(form.correctAnswer)
+                        : form.type === "descriptive"
+                            ? form.correctAnswer?.trim() || null
+                            : undefined,
                 date: form.date,
                 timeWindow: Number(form.timeWindow),
             };
-            console.log(payload)
+
+            console.log(payload);
+
             const res = await API.post("/api/admin/add-question", payload, {
                 withCredentials: true,
             });
+
             toast.success(res.data.message || "Quiz question added successfully!");
+
             setForm({
                 type: "mcq",
                 text: "",
@@ -100,12 +109,12 @@ export default function CreateQuiz() {
         }
     };
 
+
     return (
         <div className="max-w-2xl mx-auto mt-10 p-6 border rounded shadow">
             <h2 className="text-2xl font-bold mb-6">Create New Quiz</h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Question Type */}
                 <div>
                     <Label htmlFor="type">Question Type</Label>
                     <select
@@ -120,7 +129,6 @@ export default function CreateQuiz() {
                     </select>
                 </div>
 
-                {/* Question Text */}
                 <div>
                     <Label htmlFor="text">Question</Label>
                     <Textarea
@@ -132,7 +140,6 @@ export default function CreateQuiz() {
                     />
                 </div>
 
-                {/* MCQ Options */}
                 {form.type === "mcq" && (
                     <>
                         {form.options.map((opt, index) => (
@@ -172,7 +179,6 @@ export default function CreateQuiz() {
                             + Add Option
                         </Button>
 
-                        {/* Correct Answer Selector */}
                         <div>
                             <Label htmlFor="correctAnswer">Correct Answer</Label>
                             <select
@@ -194,7 +200,6 @@ export default function CreateQuiz() {
                     </>
                 )}
 
-                {/* Descriptive Reference Answer */}
                 {form.type === "descriptive" && (
                     <div>
                         <Label htmlFor="correctAnswer">
@@ -209,7 +214,6 @@ export default function CreateQuiz() {
                     </div>
                 )}
 
-                {/* Date */}
                 <div>
                     <Label htmlFor="date">Quiz Date</Label>
                     <Input
@@ -222,7 +226,6 @@ export default function CreateQuiz() {
                     />
                 </div>
 
-                {/* Time Window */}
                 <div>
                     <Label htmlFor="timeWindow">Time Window (in seconds)</Label>
                     <Input
@@ -236,14 +239,13 @@ export default function CreateQuiz() {
                     />
                 </div>
 
-                {/* Submit */}
                 <Button type="submit" disabled={loading} className="w-full">
                     {loading ? "Saving..." : "Create Quiz"}
                 </Button>
             </form>
 
             <div className="mt-4">
-                <Button variant="outline" onClick={() => navigate("/admin/dashboard")}>
+                <Button variant="outline" onClick={() => navigate(`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/dashboard`)}>
                     Back to Dashboard
                 </Button>
             </div>

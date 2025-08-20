@@ -15,9 +15,11 @@ const AdminDashboard = lazy(() => import('./components/ad/AdminDashboard.jsx'));
 const CreateQuiz = lazy(() => import('./components/ad/CreateQuiz.jsx'));
 const ManageQuestions = lazy(() => import('./components/ad/ManageQuestions.jsx'));
 const ViewResults = lazy(() => import('./components/ad/ViewResults.jsx')); //ViewResults
+const Home = lazy(() => import('./components/Home.jsx'));
 
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx'; //ProtectedAdminRoute
 import ProtectedAdminRoute from './components/auth/ProtectedAdminRoute.jsx'; //ProtectedAdminRoute
+// import Home from './components/Home.jsx';
 
 
 function App() {
@@ -35,6 +37,7 @@ function App() {
     return (
         <Suspense>
             <Routes>
+                <Route path="/" element={<Home />} />
                 <Route path="/register" element={<RegisterForm />} />
                 <Route path="/login" element={<LoginForm />} />
                 <Route path="/profile" element={<ProfilePage />} />
@@ -42,14 +45,13 @@ function App() {
                 <Route path="/:userId/:index" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
                 <Route path="/quiz/summary" element={<ProtectedRoute><QuizSummery /></ProtectedRoute>} />
 
-
-                <Route path="admin/register" element={<AdminRegister />} />
-                <Route path="admin/login" element={<AdminLogin />} />
-                <Route path="admin/profile" element={<AdminProfile />} />
-                <Route path="admin/dashboard" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
-                <Route path="/admin/create-quiz" element={<ProtectedAdminRoute><CreateQuiz /></ProtectedAdminRoute>} />
-                <Route path="/admin/manage-questions" element={<ProtectedAdminRoute><ManageQuestions /></ProtectedAdminRoute>} />
-                <Route path="/admin/results" element={<ProtectedAdminRoute><ViewResults /></ProtectedAdminRoute>} />
+                <Route path={`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/register`} element={<AdminRegister />} />
+                <Route path={`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/login`} element={<AdminLogin />} />
+                <Route path={`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/profile`} element={<AdminProfile />} />
+                <Route path={`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/dashboard`} element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+                <Route path={`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/create-quiz`} element={<ProtectedAdminRoute><CreateQuiz /></ProtectedAdminRoute>} />
+                <Route path={`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/manage-questions`} element={<ProtectedAdminRoute><ManageQuestions /></ProtectedAdminRoute>} />
+                <Route path={`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/results`} element={<ProtectedAdminRoute><ViewResults /></ProtectedAdminRoute>} />
             </Routes>
         </Suspense>
     );
