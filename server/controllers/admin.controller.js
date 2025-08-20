@@ -186,21 +186,31 @@ export const addQuestion = async (req, res) => {
             }
         }
 
+        if (type === "descriptive") {
+            if (correctAnswer && typeof correctAnswer !== "string") {
+                return res.status(400).json({ message: "Reference answer must be a string" });
+            }
+        }
+
         const question = new Question({
             type,
             text,
             options: type === "mcq" ? options : undefined,
-            correctAnswer: type === "mcq" ? correctAnswer : undefined,
+            correctAnswer:
+                type === "mcq"
+                    ? correctAnswer
+                    : type === "descriptive"
+                        ? (correctAnswer?.trim() || null) // ✅ Save reference answer
+                        : undefined,
             date: date.trim(),
             timeWindow: timeWindow || 20,
         });
 
         await question.save();
 
-        //  redis question cache update  for today.... (WORK IN PROGRESS)
+        // Update redis cache for that date
         const today = date.trim();
         const questionsForToday = await Question.find({ date: today });
-        // console.log(`quiz:${today}`)
         await redis.set(`quiz:${today}`, JSON.stringify(questionsForToday));
 
         res.status(201).json({ message: "Question added successfully", question });
@@ -209,6 +219,7 @@ export const addQuestion = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
 
 export const getDashboardStats = async (req, res) => {
     try {
@@ -256,7 +267,6 @@ export const getDashboardStats = async (req, res) => {
         res.status(500).json({ message: "Failed to fetch dashboard stats" });
     }
 };
-
 
 //  imp stuff
 

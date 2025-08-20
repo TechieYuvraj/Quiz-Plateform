@@ -35,7 +35,8 @@ export default function AdminRegister() {
             const res = await API.post("/api/admin/registerAdmin", form, { withCredentials: true });
             toast.success(res.data.message || "Admin registered successfully!");
             console.log("Regoistered admin")
-            navigate("/admin/profile");
+            // navigate("/admin/profile");
+            navigate(`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/profile`);
         } catch (err) {
             toast.error(err.response?.data?.message || "Registration failed");
         } finally {

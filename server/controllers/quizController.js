@@ -143,9 +143,9 @@ export const AddAttemptAndGetAnswerByIndex = async (req, res) => {
 
 export const getTodayQuizSummary = async (req, res) => {
     try {
-        const userId = req.userId  //  from verifyToken
+        const userId = req.userId; // from verifyToken
         if (!userId) {
-            return res.status(400).json({ message: "User ID not found in token." })
+            return res.status(400).json({ message: "User ID not found in token." });
         }
 
         const indianDate = new Intl.DateTimeFormat("en-CA", {
@@ -153,27 +153,91 @@ export const getTodayQuizSummary = async (req, res) => {
             month: "2-digit",
             day: "2-digit",
             timeZone: "Asia/Kolkata"
-        }).format(new Date())
+        }).format(new Date());
 
-        const attempts = await Attempt.find({ user: userId, date: indianDate })
+        const attempts = await Attempt.find({ user: userId, date: indianDate });
 
-        const redisKey = `quiz:${indianDate}`
-        const cached = await redis.get(redisKey)
-        const questions = cached ? JSON.parse(cached) : []
+        const redisKey = `quiz:${indianDate}`;
+        const cached = await redis.get(redisKey);
+        const questions = cached ? JSON.parse(cached) : [];
 
-        const summary = attempts.map(a => {
-            const q = questions.find(q => q._id === String(a.question))
+        const summary = attempts.map((a) => {
+            const q = questions.find((q) => q._id === String(a.question));
+
             return {
-                type: q.type,
+                type: q?.type || "unknown",
                 question: q?.text || "Question not found",
                 userAnswer: a.answer,
-                correctAnswer: q?.correctAnswer || null
-            }
-        })
+                correctAnswer:
+                    q?.type === "mcq"
+                        ? q?.correctAnswer
+                        : q?.type === "descriptive"
+                            ? q?.correctAnswer || null // reference answer text
+                            : null,
+                isCorrect:
+                    q?.type === "descriptive"
+                        ? a.isCorrect
+                        : q?.correctAnswer === a.answer
+                            ? "r"
+                            : "w"
+            };
+        });
 
-        return res.status(200).json({ summary })
+        return res.status(200).json({ summary });
     } catch (err) {
-        console.error("Error in getTodayQuizSummary:", err.message)
-        return res.status(500).json({ message: "Server error while fetching summary." })
+        console.error("Error in getTodayQuizSummary:", err.message);
+        return res.status(500).json({ message: "Server error while fetching summary." });
     }
-} 
+};
+
+
+export const getQuizSummaryByDate = async (req, res) => {
+    try {
+        const userId = req.userId; // from verifyToken
+        const { date } = req.query;
+
+        if (!userId) {
+            return res.status(400).json({ message: "User ID not found in token." });
+        }
+        if (!date) {
+            return res.status(400).json({ message: "Date is required." });
+        }
+
+        const attempts = await Attempt.find({ user: userId, date });
+
+        const redisKey = `quiz:${date}`;
+        const cached = await redis.get(redisKey);
+        const questions = cached ? JSON.parse(cached) : [];
+
+        if (!attempts.length) {
+            return res.status(404).json({ message: "No quiz attempts found for this date." });
+        }
+
+        const summary = attempts.map((a) => {
+            const q = questions.find((q) => q._id === String(a.question));
+
+            return {
+                type: q?.type || "unknown",
+                question: q?.text || "Question not found",
+                userAnswer: a.answer,
+                correctAnswer:
+                    q?.type === "mcq"
+                        ? q?.correctAnswer
+                        : q?.type === "descriptive"
+                            ? q?.correctAnswer || null
+                            : null,
+                isCorrect:
+                    q?.type === "descriptive"
+                        ? a.isCorrect
+                        : q?.correctAnswer === a.answer
+                            ? "r"
+                            : "w"
+            };
+        });
+
+        return res.status(200).json({ summary, date });
+    } catch (err) {
+        console.error("Error in getQuizSummaryByDate:", err.message);
+        return res.status(500).json({ message: "Server error while fetching summary." });
+    }
+};

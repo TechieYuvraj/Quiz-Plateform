@@ -87,7 +87,7 @@ export default function ManageQuestions() {
         <div className="max-w-5xl mx-auto mt-10 p-6">
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-3xl font-bold">Manage Questions</h1>
-                <Button variant="outline" onClick={() => navigate("/admin/dashboard")}>
+                <Button variant="outline" onClick={() => navigate(`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/dashboard`)}>
                     &lt;
                 </Button>
             </div>

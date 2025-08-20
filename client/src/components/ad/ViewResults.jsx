@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import API from "../../../axios.config";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 export default function ViewResults() {
     const [date, setDate] = useState("");
@@ -13,6 +14,7 @@ export default function ViewResults() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const limit = 10;
+    const navigate = useNavigate();
 
     const [viewingAnswers, setViewingAnswers] = useState(null); // { name, answers: [] }
     const [loadingAnswers, setLoadingAnswers] = useState(false);
@@ -67,7 +69,13 @@ export default function ViewResults() {
 
     return (
         <div className="max-w-6xl mx-auto mt-10 p-6">
-            <h1 className="text-3xl font-bold mb-6">View Results</h1>
+            <h1 className="text-3xl font-bold mb-6">
+                <Button variant="outline" onClick={() => navigate(`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/dashboard`)} className="bg-gray-200 mr-2">
+                    &lt;
+                </Button>
+                View Results
+            </h1>
+
 
             {/* Filters */}
             <div className="flex gap-4 mb-6">
@@ -188,26 +196,53 @@ export default function ViewResults() {
                                     {a.type === "descriptive" && (
                                         <>
                                             <p>
-                                                <strong>Your Answer:</strong> {a.userAnswer}
+                                                <strong>User Answer:</strong> {a.userAnswer}
                                             </p>
+                                            <p>
+                                                <strong>Refrence Answer:</strong> {a.correctAnswer}
+                                            </p>
+
+                                            {/* Status display */}
+                                            <p className="mt-2">
+                                                <strong>Status:</strong>{" "}
+                                                {a.isCorrect === "r"
+                                                    ? "✅ Correct"
+                                                    : a.isCorrect === "w"
+                                                        ? "❌ Wrong"
+                                                        : "⏳ Pending"}
+                                            </p>
+
+                                            {/* Action buttons */}
                                             <div className="flex gap-2 mt-2">
                                                 <Button
                                                     size="sm"
                                                     variant="secondary"
                                                     onClick={async () => {
-                                                        if (a.type !== "descriptive") {
-                                                            toast.error("Only descriptive answers can be marked manually");
-                                                            return;
-                                                        }
                                                         try {
-                                                            await API.put("/api/admin/mark-descriptive", {
-                                                                userId: selectedUserIdRef.current, // Use ref here
-                                                                questionId: a.questionId,
-                                                                status: "r"
-                                                            }, { withCredentials: true });
+                                                            await API.put(
+                                                                "/api/admin/mark-descriptive",
+                                                                {
+                                                                    userId: selectedUserIdRef.current,
+                                                                    questionId: a.questionId,
+                                                                    status: "r",
+                                                                },
+                                                                { withCredentials: true }
+                                                            );
                                                             toast.success("Marked Correct");
+
+                                                            // ✅ Auto update UI without refetch
+                                                            setViewingAnswers((prev) => ({
+                                                                ...prev,
+                                                                answers: prev.answers.map((ans) =>
+                                                                    ans.questionId === a.questionId
+                                                                        ? { ...ans, isCorrect: "r" }
+                                                                        : ans
+                                                                ),
+                                                            }));
                                                         } catch (err) {
-                                                            toast.error(err.response?.data?.message || "Failed to mark");
+                                                            toast.error(
+                                                                err.response?.data?.message || "Failed to mark"
+                                                            );
                                                         }
                                                     }}
                                                 >
@@ -218,19 +253,31 @@ export default function ViewResults() {
                                                     size="sm"
                                                     variant="destructive"
                                                     onClick={async () => {
-                                                        if (a.type !== "descriptive") {
-                                                            toast.error("Only descriptive answers can be marked manually");
-                                                            return;
-                                                        }
                                                         try {
-                                                            await API.put("/api/admin/mark-descriptive", {
-                                                                userId: selectedUserIdRef.current, // Use ref here
-                                                                questionId: a.questionId,
-                                                                status: "w"
-                                                            }, { withCredentials: true });
+                                                            await API.put(
+                                                                "/api/admin/mark-descriptive",
+                                                                {
+                                                                    userId: selectedUserIdRef.current,
+                                                                    questionId: a.questionId,
+                                                                    status: "w",
+                                                                },
+                                                                { withCredentials: true }
+                                                            );
                                                             toast.error("Marked Wrong");
+
+                                                            // ✅ Auto update UI without refetch
+                                                            setViewingAnswers((prev) => ({
+                                                                ...prev,
+                                                                answers: prev.answers.map((ans) =>
+                                                                    ans.questionId === a.questionId
+                                                                        ? { ...ans, isCorrect: "w" }
+                                                                        : ans
+                                                                ),
+                                                            }));
                                                         } catch (err) {
-                                                            toast.error(err.response?.data?.message || "Failed to mark");
+                                                            toast.error(
+                                                                err.response?.data?.message || "Failed to mark"
+                                                            );
                                                         }
                                                     }}
                                                 >
