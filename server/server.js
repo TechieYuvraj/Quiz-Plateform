@@ -10,7 +10,7 @@ import { one_day_question_update_CRON } from './utils/cron/question.cron.js';
 dotenv.config();
 const app = express();
 app.use(cors({
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173","https://cgquizapp.netlify.app"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
 }));
