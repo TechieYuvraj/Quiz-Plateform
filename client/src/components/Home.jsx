@@ -1,10 +1,29 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import logoIMG from "../assets/image.png";
+import { useEffect } from "react";
+import API from "../../axios.config";
 
 
 export default function Home() {
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const checkLogin = async () => {
+            try {
+                const res = await API.get("/api/user/check");
+                if (res.data.success) {
+                    navigate("/profile");
+                }
+            } catch (err) {
+                console.log(err)
+                // no token, or not logged in — ignore
+                // console.log("User not logged in");
+            }
+        };
+
+        checkLogin();
+    }, [navigate]);
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen text-center px-4 sm:px-6 bg-white">
