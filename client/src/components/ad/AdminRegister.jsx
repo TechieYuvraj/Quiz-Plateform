@@ -70,7 +70,7 @@ export default function AdminRegister() {
                         name="role"
                         value={form.role}
                         onChange={handleChange}
-                        className="border p-2 w-full rounded"
+                        className="border p-2 w-full rounded bg-white dark:bg-zinc-900 dark:text-white dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
                         <option value="moderator">Moderator</option>
                         <option value="superadmin">Super Admin</option>
@@ -95,6 +95,18 @@ export default function AdminRegister() {
                     {loading ? "Registering..." : "Register"}
                 </Button>
             </form>
+            <div className="text-center mt-4">
+                <span className="text-sm text-muted-foreground">
+                    Already have an account?{" "}
+                    <button
+                        type="button"
+                        className="text-blue-600 hover:underline"
+                        onClick={() => navigate(`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/login`)}
+                    >
+                        Login
+                    </button>
+                </span>
+            </div>
         </div>
     );
 }

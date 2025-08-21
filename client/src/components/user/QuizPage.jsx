@@ -160,7 +160,7 @@ export default function QuizPage() {
                 </div>
             ) : (
                 <textarea
-                    className="w-full border p-2 mt-2"
+                    className="w-full border p-2 mt-2 rounded bg-white text-gray-900 dark:bg-zinc-900 dark:text-white dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
                     rows={4}
                     placeholder="Write your answer..."
                     onChange={(e) => setSelectedAnswer(e.target.value)}
@@ -170,8 +170,16 @@ export default function QuizPage() {
             )}
 
             {showAnswer !== null && (
-                <div className="mt-4 p-3 border rounded bg-green-50 text-green-700">
-                    Correct Answer: <strong>{showAnswer}</strong>
+                <div className="mt-4 p-3 border rounded bg-green-50 text-green-700 dark:bg-green-950/60 dark:text-green-300">
+                    Correct Answer: <strong>
+                        {question.type === "mcq"
+                            ? (
+                                question.options && question.options.length > Number(showAnswer)
+                                    ? `${Number(showAnswer) + 1}. ${question.options[Number(showAnswer)]}`
+                                    : Number(showAnswer) + 1
+                            )
+                            : showAnswer}
+                    </strong>
                 </div>
             )}
 

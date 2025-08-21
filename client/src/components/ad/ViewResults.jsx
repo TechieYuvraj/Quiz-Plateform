@@ -70,7 +70,7 @@ export default function ViewResults() {
     return (
         <div className="max-w-6xl mx-auto mt-10 p-6">
             <h1 className="text-3xl font-bold mb-6">
-                <Button variant="outline" onClick={() => navigate(`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/dashboard`)} className="bg-gray-200 mr-2">
+                <Button variant="outline" onClick={() => navigate(`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/dashboard`)} className="mr-2">
                     &lt;
                 </Button>
                 View Results
@@ -105,7 +105,7 @@ export default function ViewResults() {
                 <div className="overflow-x-auto">
                     <table className="min-w-full border">
                         <thead>
-                            <tr className="bg-gray-100">
+                            <tr className="">
                                 <th className="p-2 border">Name</th>
                                 <th className="p-2 border">Score</th>
                                 <th className="p-2 border">Percentage</th>
@@ -159,135 +159,155 @@ export default function ViewResults() {
 
             {/* View Answers Modal */}
             {viewingAnswers && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-white p-6 rounded shadow-lg w-full max-w-3xl max-h-[80vh] overflow-y-auto">
-                        <h2 className="text-xl font-bold mb-4">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white dark:bg-zinc-900 p-6 rounded shadow-lg w-full max-w-3xl max-h-[80vh] overflow-y-auto border dark:border-zinc-700 transition-colors">
+                        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
                             Answers - {viewingAnswers.name}
                         </h2>
 
                         {loadingAnswers ? (
-                            <p>Loading answers...</p>
+                            <p className="text-center text-gray-700 dark:text-gray-200">Loading answers...</p>
                         ) : viewingAnswers.answers.length === 0 ? (
-                            <p>No answers found.</p>
+                            <p className="text-center text-gray-700 dark:text-gray-200">No answers found.</p>
                         ) : (
-                            viewingAnswers.answers.map((a, idx) => (
-                                <div key={idx} className="border p-3 rounded mb-3">
-                                    <p className="font-semibold">
-                                        Q{idx + 1}: {a.questionText}
-                                    </p>
-                                    {a.type === "mcq" && (
-                                        <>
-                                            <p>
-                                                <strong>Your Answer:</strong>{" "}
-                                                {a.options?.[a.userAnswer]}
-                                            </p>
-                                            <p>
-                                                <strong>Correct Answer:</strong>{" "}
-                                                {a.options?.[a.correctAnswer]}
-                                            </p>
-                                            <p>
-                                                <strong>Status:</strong>{" "}
-                                                {Number(a.userAnswer) === Number(a.correctAnswer)
-                                                    ? "✅ Correct"
-                                                    : "❌ Wrong"}
-                                            </p>
-                                        </>
-                                    )}
-                                    {a.type === "descriptive" && (
-                                        <>
-                                            <p>
-                                                <strong>User Answer:</strong> {a.userAnswer}
-                                            </p>
-                                            <p>
-                                                <strong>Refrence Answer:</strong> {a.correctAnswer}
-                                            </p>
+                            viewingAnswers.answers.map((a, idx) => {
+                                // Status color classes
+                                let status = a.type === "mcq"
+                                    ? (Number(a.userAnswer) === Number(a.correctAnswer) ? "r" : "w")
+                                    : a.isCorrect || "p";
+                                const statusClasses = status === "r"
+                                    ? "border-green-500 bg-green-50 dark:bg-green-950/60 dark:border-green-600"
+                                    : status === "w"
+                                        ? "border-red-500 bg-red-50 dark:bg-red-950/60 dark:border-red-600"
+                                        : "border-yellow-500 bg-yellow-50 dark:bg-yellow-950/60 dark:border-yellow-600";
+                                const answerTextClass = status === "r"
+                                    ? "text-green-700 dark:text-green-300"
+                                    : status === "w"
+                                        ? "text-red-700 dark:text-red-300"
+                                        : "text-yellow-700 dark:text-yellow-300";
+                                const correctAnswerClass = a.type === "mcq"
+                                    ? "text-green-700 dark:text-green-300 font-semibold"
+                                    : "text-gray-600 dark:text-gray-300 font-semibold";
 
-                                            {/* Status display */}
-                                            <p className="mt-2">
-                                                <strong>Status:</strong>{" "}
-                                                {a.isCorrect === "r"
-                                                    ? "✅ Correct"
-                                                    : a.isCorrect === "w"
-                                                        ? "❌ Wrong"
-                                                        : "⏳ Pending"}
-                                            </p>
+                                return (
+                                    <div key={idx} className={`border p-3 rounded mb-3 transition-colors ${statusClasses}`}>
+                                        <p className="font-semibold text-gray-900 dark:text-white">
+                                            Q{idx + 1}: {a.questionText}
+                                        </p>
+                                        {a.type === "mcq" && (
+                                            <>
+                                                <p>
+                                                    <strong className="text-gray-800 dark:text-gray-200">Your Answer:</strong>{" "}
+                                                    <span className={answerTextClass}>
+                                                        {a.options?.[a.userAnswer] ?? "No answer"}
+                                                    </span>
+                                                </p>
+                                                <p>
+                                                    <strong className="text-gray-800 dark:text-gray-200">Correct Answer:</strong>{" "}
+                                                    <span className={correctAnswerClass}>
+                                                        {a.options?.[a.correctAnswer] ?? "N/A"}
+                                                    </span>
+                                                </p>
+                                                <p>
+                                                    <strong className="text-gray-800 dark:text-gray-200">Status:</strong>{" "}
+                                                    {Number(a.userAnswer) === Number(a.correctAnswer)
+                                                        ? <span className="text-green-700 dark:text-green-300">✅ Correct</span>
+                                                        : <span className="text-red-700 dark:text-red-300">❌ Wrong</span>}
+                                                </p>
+                                            </>
+                                        )}
+                                        {a.type === "descriptive" && (
+                                            <>
+                                                <p>
+                                                    <strong className="text-gray-800 dark:text-gray-200">User Answer:</strong>{" "}
+                                                    <span className={answerTextClass}>{a.userAnswer || "No answer"}</span>
+                                                </p>
+                                                <p>
+                                                    <strong className="text-gray-800 dark:text-gray-200">Reference Answer:</strong>{" "}
+                                                    <span className={correctAnswerClass}>{a.correctAnswer || "N/A"}</span>
+                                                </p>
+                                                {/* Status display */}
+                                                <p className="mt-2">
+                                                    <strong className="text-gray-800 dark:text-gray-200">Status:</strong>{" "}
+                                                    {a.isCorrect === "r"
+                                                        ? <span className="text-green-700 dark:text-green-300">✅ Correct</span>
+                                                        : a.isCorrect === "w"
+                                                            ? <span className="text-red-700 dark:text-red-300">❌ Wrong</span>
+                                                            : <span className="text-yellow-700 dark:text-yellow-300">⏳ Pending</span>}
+                                                </p>
+                                                {/* Action buttons */}
+                                                <div className="flex gap-2 mt-2">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="secondary"
+                                                        onClick={async () => {
+                                                            try {
+                                                                await API.put(
+                                                                    "/api/admin/mark-descriptive",
+                                                                    {
+                                                                        userId: selectedUserIdRef.current,
+                                                                        questionId: a.questionId,
+                                                                        status: "r",
+                                                                    },
+                                                                    { withCredentials: true }
+                                                                );
+                                                                toast.success("Marked Correct");
+                                                                setViewingAnswers((prev) => ({
+                                                                    ...prev,
+                                                                    answers: prev.answers.map((ans) =>
+                                                                        ans.questionId === a.questionId
+                                                                            ? { ...ans, isCorrect: "r" }
+                                                                            : ans
+                                                                    ),
+                                                                }));
+                                                            } catch (err) {
+                                                                toast.error(
+                                                                    err.response?.data?.message || "Failed to mark"
+                                                                );
+                                                            }
+                                                        }}
+                                                    >
+                                                        Mark Correct
+                                                    </Button>
 
-                                            {/* Action buttons */}
-                                            <div className="flex gap-2 mt-2">
-                                                <Button
-                                                    size="sm"
-                                                    variant="secondary"
-                                                    onClick={async () => {
-                                                        try {
-                                                            await API.put(
-                                                                "/api/admin/mark-descriptive",
-                                                                {
-                                                                    userId: selectedUserIdRef.current,
-                                                                    questionId: a.questionId,
-                                                                    status: "r",
-                                                                },
-                                                                { withCredentials: true }
-                                                            );
-                                                            toast.success("Marked Correct");
-
-                                                            // ✅ Auto update UI without refetch
-                                                            setViewingAnswers((prev) => ({
-                                                                ...prev,
-                                                                answers: prev.answers.map((ans) =>
-                                                                    ans.questionId === a.questionId
-                                                                        ? { ...ans, isCorrect: "r" }
-                                                                        : ans
-                                                                ),
-                                                            }));
-                                                        } catch (err) {
-                                                            toast.error(
-                                                                err.response?.data?.message || "Failed to mark"
-                                                            );
-                                                        }
-                                                    }}
-                                                >
-                                                    Mark Correct
-                                                </Button>
-
-                                                <Button
-                                                    size="sm"
-                                                    variant="destructive"
-                                                    onClick={async () => {
-                                                        try {
-                                                            await API.put(
-                                                                "/api/admin/mark-descriptive",
-                                                                {
-                                                                    userId: selectedUserIdRef.current,
-                                                                    questionId: a.questionId,
-                                                                    status: "w",
-                                                                },
-                                                                { withCredentials: true }
-                                                            );
-                                                            toast.error("Marked Wrong");
-
-                                                            // ✅ Auto update UI without refetch
-                                                            setViewingAnswers((prev) => ({
-                                                                ...prev,
-                                                                answers: prev.answers.map((ans) =>
-                                                                    ans.questionId === a.questionId
-                                                                        ? { ...ans, isCorrect: "w" }
-                                                                        : ans
-                                                                ),
-                                                            }));
-                                                        } catch (err) {
-                                                            toast.error(
-                                                                err.response?.data?.message || "Failed to mark"
-                                                            );
-                                                        }
-                                                    }}
-                                                >
-                                                    Mark Wrong
-                                                </Button>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                            ))
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        onClick={async () => {
+                                                            try {
+                                                                await API.put(
+                                                                    "/api/admin/mark-descriptive",
+                                                                    {
+                                                                        userId: selectedUserIdRef.current,
+                                                                        questionId: a.questionId,
+                                                                        status: "w",
+                                                                    },
+                                                                    { withCredentials: true }
+                                                                );
+                                                                toast.error("Marked Wrong");
+                                                                setViewingAnswers((prev) => ({
+                                                                    ...prev,
+                                                                    answers: prev.answers.map((ans) =>
+                                                                        ans.questionId === a.questionId
+                                                                            ? { ...ans, isCorrect: "w" }
+                                                                            : ans
+                                                                    ),
+                                                                }));
+                                                            } catch (err) {
+                                                                toast.error(
+                                                                    err.response?.data?.message || "Failed to mark"
+                                                                );
+                                                            }
+                                                        }}
+                                                    >
+                                                        Mark Wrong
+                                                    </Button>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                );
+                            })
                         )}
 
                         <div className="mt-4 flex justify-end">

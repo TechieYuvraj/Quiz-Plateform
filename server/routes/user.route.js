@@ -1,5 +1,5 @@
 import express from 'express';
-import { sendOtp, verifyAndRegister, sendLoginOtp, verifyLoginOtp, getUserProfile, logoutUser } from '../controllers/User.controller.js';
+import { sendOtp, verifyAndRegister, sendLoginOtp, verifyLoginOtp, getUserProfile, logoutUser, checkAuth } from '../controllers/User.controller.js';
 import { verifyToken } from '../middleware/verifyToken.middleware.js';
 import { getTodayQuizByIndex, AddAttemptAndGetAnswerByIndex, getTodayQuizSummary } from '../controllers/quizController.js';
 
@@ -15,6 +15,7 @@ router.get('/profile', verifyToken, getUserProfile);
 router.post('/quiz/today', verifyToken, getTodayQuizByIndex);
 router.post('/quiz/attempt', verifyToken, AddAttemptAndGetAnswerByIndex);
 router.get('/quiz/today/summary', verifyToken, getTodayQuizSummary);
+router.get('/check', checkAuth);
 // quiz/today/summary?userId=xxx
 
 // router.get('/quiz/today', getTodayQuiz);

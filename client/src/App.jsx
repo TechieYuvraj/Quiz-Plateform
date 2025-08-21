@@ -24,16 +24,21 @@ import ProtectedAdminRoute from './components/auth/ProtectedAdminRoute.jsx'; //P
 
 function App() {
     useEffect(() => {
-        const storedTheme = localStorage.getItem("theme");
-        if (
-            storedTheme === "dark" ||
-            (!storedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches)
-        ) {
+        let storedTheme = localStorage.getItem("theme");
+
+        if (!storedTheme) {
+            // Default to light
+            localStorage.setItem("theme", "light");
+            storedTheme = "light";
+        }
+
+        if (storedTheme === "dark") {
             document.documentElement.classList.add("dark");
         } else {
             document.documentElement.classList.remove("dark");
         }
     }, []);
+
     return (
         <Suspense>
             <Routes>

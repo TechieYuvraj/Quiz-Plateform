@@ -1,36 +1,35 @@
 .dot-grid-background {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 200%;
+    inset: 0;
+    width: 100%;
     height: 100%;
     z-index: 0;
-    overflow: hidden;
     pointer-events: none;
+    overflow: hidden;
 }
 
-.dot-grid-layer {
-    width: 200%;
-    height: 100%;
-    background-image: radial-gradient(currentColor 1.5px, transparent 0);
-    background-size: 40px 40px;
-    animation: moveDots 30s linear infinite;
-    opacity: 0.05;
-    color: black;
+.dot {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: currentColor;
+    opacity: 0.4;
+    animation: moveParticle linear infinite alternate;
 }
 
-@keyframes moveDots {
+@keyframes moveParticle {
     0% {
-        transform: translateX(0%);
+        transform: translate(0, 0);
     }
 
     100% {
-        transform: translateX(-50%);
+        transform: translate(var(--dx), var(--dy));
     }
 }
 
-/* Optional: Support dark mode */
-.dark .dot-grid-layer {
-    color: white;
-    opacity: 0.07;
+/* Dark mode */
+.dark .dot {
+    background-color: white;
+    opacity: 0.3;
 }

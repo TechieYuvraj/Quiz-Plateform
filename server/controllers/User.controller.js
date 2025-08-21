@@ -55,7 +55,7 @@ export const verifyAndRegister = async (req, res) => {
         res.cookie("STID", STID, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "Lax", // or "Strict" for more security
+            sameSite: "None", // or "Strict" for more security
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
 
@@ -114,7 +114,7 @@ export const verifyLoginOtp = async (req, res) => {
     res.cookie("STID", STID, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "Lax", // or "Strict" for more security
+        sameSite: "None", // or "Strict" for more security
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
@@ -140,8 +140,27 @@ export const logoutUser = (req, res) => {
     res.clearCookie("STID", {
         httpOnly: true,
         secure: true,
-        sameSite: "strict",
+        sameSite: "None",
     })
         .status(200)
         .json({ message: "Logged out successfully" });
+};
+
+export const checkAuth = async (req, res) => {
+    try {
+        const token = req.cookies?.STID;
+
+        if (!token) {
+            return res.status(401).json({ success: false, message: "No token found" });
+        }
+
+        // ✅ If you want to actually verify the JWT:
+        // import jwt from "jsonwebtoken";
+        // jwt.verify(token, process.env.JWT_SECRET);
+
+        return res.status(200).json({ success: true, message: "User authenticated" });
+    } catch (err) {
+        console.error("Auth check error:", err.message);
+        return res.status(500).json({ success: false, message: "Server error" });
+    }
 };
