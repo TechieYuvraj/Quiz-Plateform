@@ -39,7 +39,7 @@ export default function AdminDashboard() {
     return (
         <div className="max-w-5xl mx-auto mt-10 p-6">
             <h1 className="text-3xl font-bold mb-6 flex items-center">
-                <Button variant="outline" onClick={() => navigate(`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/profile`)} className="bg-gray-200 mr-2">
+                <Button variant="outline" onClick={() => navigate(`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/profile`)} className="mr-2">
                     &lt;
                 </Button>
                 Admin Dashboard

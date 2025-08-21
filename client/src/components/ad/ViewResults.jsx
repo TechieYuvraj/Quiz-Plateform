@@ -70,7 +70,7 @@ export default function ViewResults() {
     return (
         <div className="max-w-6xl mx-auto mt-10 p-6">
             <h1 className="text-3xl font-bold mb-6">
-                <Button variant="outline" onClick={() => navigate(`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/dashboard`)} className="bg-gray-200 mr-2">
+                <Button variant="outline" onClick={() => navigate(`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/dashboard`)} className="mr-2">
                     &lt;
                 </Button>
                 View Results

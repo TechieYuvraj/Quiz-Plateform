@@ -122,7 +122,7 @@ export default function CreateQuiz() {
                         name="type"
                         value={form.type}
                         onChange={handleChange}
-                        className="border p-2 w-full rounded"
+                        className="border p-2 w-full rounded bg-white dark:bg-zinc-900 dark:text-white dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
                         <option value="mcq">MCQ</option>
                         <option value="descriptive">Descriptive</option>
@@ -186,7 +186,7 @@ export default function CreateQuiz() {
                                 name="correctAnswer"
                                 value={form.correctAnswer}
                                 onChange={handleChange}
-                                className="border p-2 w-full rounded"
+                                className="border p-2 w-full rounded bg-white dark:bg-zinc-900 dark:text-white dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 required
                             >
                                 <option value="">Select Correct Option</option>

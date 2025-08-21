@@ -103,7 +103,7 @@ export default function ManageQuestions() {
                 <select
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
-                    className="border p-2 rounded"
+                    className="border p-2 rounded bg-white dark:bg-zinc-900 dark:text-white dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                     <option value="">All Types</option>
                     <option value="mcq">MCQ</option>
