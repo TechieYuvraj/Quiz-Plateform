@@ -14,6 +14,7 @@ import { ThemeToggle } from "../ThemeToggle";
 import logoIMG from "../../assets/image.png"
 import { useDispatch } from "react-redux";
 import { login } from "../../redux/slices/authSlice.js";
+import DotGrid from "../animated-bg/DotGrid";
 
 
 
@@ -42,13 +43,13 @@ export default function RegisterForm() {
     };
 
     const [form, setForm] = useState({
-        name: "Sahil Vaishnav",
-        email: "sahilvaishnav115@gmail.com",
-        phone: "1234",
-        college: "git",
-        course: "CSE",
-        year: "2",
-        password: "1234",
+        name: "",
+        email: "",
+        phone: "",
+        college: "",
+        course: "",
+        year: "",
+        password: "",
     });
 
     const [loading, setLoading] = useState(false);
@@ -128,9 +129,13 @@ export default function RegisterForm() {
                 <ThemeToggle />
             </div>
             <div className="flex justify-center items-center min-h-screen px-4 ">
+                <DotGrid />
                 <Card className="w-full max-w-sm sm:max-w-md shadow-lg rounded-xl">
                     <CardContent className="p-6">
-                        <h2 className="text-xl flex items-center sm:text-2xl font-bold text-center mb-6 gap-3"><img className="rounded-full" width={50} src={logoIMG} alt="" />Register for CG Quiz</h2>
+                        <h2 className="text-xl flex items-center sm:text-2xl font-bold text-center mb-6 gap-3">
+                            <img className="rounded-full" width={50} src={logoIMG} alt="" />
+                            Register for CG Quiz
+                        </h2>
 
                         {step === 1 ? (
                             <div className="space-y-4">
@@ -166,6 +171,18 @@ export default function RegisterForm() {
                                         "Send OTP"
                                     )}
                                 </Button>
+                                <div className="text-center mt-4">
+                                    <span className="text-sm text-muted-foreground">
+                                        Already have an account?{" "}
+                                        <button
+                                            type="button"
+                                            className="text-blue-600 hover:underline"
+                                            onClick={() => navi("/login")}
+                                        >
+                                            Login
+                                        </button>
+                                    </span>
+                                </div>
                             </div>
                         ) : (
                             <div className="flex justify-center items-center min-h-[50vh] mt-[-100px]">

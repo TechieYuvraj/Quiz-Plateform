@@ -84,6 +84,18 @@ export default function AdminLogin() {
                     {loading ? "Logging in..." : "Login"}
                 </Button>
             </form>
+            <div className="text-center mt-4">
+                <span className="text-sm text-muted-foreground">
+                    Don&apos;t have an account?{" "}
+                    <button
+                        type="button"
+                        className="text-blue-600 hover:underline"
+                        onClick={() => navigate(`/${import.meta.env.VITE_ADMIN_ROUTE_KEY}/register`)}
+                    >
+                        Register
+                    </button>
+                </span>
+            </div>
         </div>
     );
 }

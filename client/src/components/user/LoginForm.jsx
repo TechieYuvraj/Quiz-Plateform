@@ -86,9 +86,10 @@ export default function LoginForm() {
 
                 <Card className="w-full max-w-sm sm:max-w-md shadow-lg rounded-xl border-2">
                     <CardContent className="p-6">
-                        {/* <h2 className="text-xl sm:text-2xl font-bold text-center mb-6">Login</h2> */}
-                        <h2 className="text-xl flex flex-col items-center  sm:text-2xl font-bold text-center mb-6 gap-3"><img className="rounded-full" width={50} src={logoIMG} alt="" />Login</h2>
-
+                        <h2 className="text-xl flex flex-col items-center  sm:text-2xl font-bold text-center mb-6 gap-3">
+                            <img className="rounded-full" width={50} src={logoIMG} alt="" />
+                            Login
+                        </h2>
 
                         {step === 1 ? (
                             <div className="space-y-4">
@@ -116,6 +117,18 @@ export default function LoginForm() {
                                         "Send OTP"
                                     )}
                                 </Button>
+                                <div className="text-center mt-4">
+                                    <span className="text-sm text-muted-foreground">
+                                        Don&apos;t have an account?{" "}
+                                        <button
+                                            type="button"
+                                            className="text-blue-600 hover:underline"
+                                            onClick={() => navigate("/register")}
+                                        >
+                                            Register now
+                                        </button>
+                                    </span>
+                                </div>
                             </div>
                         ) : (
                             <div className="flex justify-center items-center min-h-[50vh] mt-[-100px]">
