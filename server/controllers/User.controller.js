@@ -55,7 +55,7 @@ export const verifyAndRegister = async (req, res) => {
         res.cookie("STID", STID, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "Lax", // or "Strict" for more security
+            sameSite: "None", // or "Strict" for more security
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
 
@@ -114,7 +114,7 @@ export const verifyLoginOtp = async (req, res) => {
     res.cookie("STID", STID, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "Lax", // or "Strict" for more security
+        sameSite: "None", // or "Strict" for more security
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
@@ -140,7 +140,7 @@ export const logoutUser = (req, res) => {
     res.clearCookie("STID", {
         httpOnly: true,
         secure: true,
-        sameSite: "strict",
+        sameSite: "None",
     })
         .status(200)
         .json({ message: "Logged out successfully" });
