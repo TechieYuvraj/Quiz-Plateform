@@ -171,16 +171,16 @@ export default function ManageQuestions() {
 
             {/* Edit Modal */}
             {editing && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-white p-6 rounded shadow-lg w-full max-w-lg">
-                        <h2 className="text-xl font-bold mb-4">Edit Question</h2>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white dark:bg-zinc-900 p-6 rounded shadow-lg w-full max-w-lg border dark:border-zinc-700 transition-colors">
+                        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Edit Question</h2>
                         <form onSubmit={handleEditSubmit} className="space-y-4">
                             <div>
-                                <Label>Question Type</Label>
+                                <Label className="dark:text-gray-200">Question Type</Label>
                                 <select
                                     value={editing.type}
                                     onChange={(e) => setEditing({ ...editing, type: e.target.value })}
-                                    className="border p-2 w-full rounded"
+                                    className="border p-2 w-full rounded bg-white dark:bg-zinc-900 dark:text-white dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
                                 >
                                     <option value="mcq">MCQ</option>
                                     <option value="descriptive">Descriptive</option>
@@ -188,10 +188,11 @@ export default function ManageQuestions() {
                             </div>
 
                             <div>
-                                <Label>Question</Label>
+                                <Label className="dark:text-gray-200">Question</Label>
                                 <Textarea
                                     value={editing.text}
                                     onChange={(e) => setEditing({ ...editing, text: e.target.value })}
+                                    className="bg-white dark:bg-zinc-900 dark:text-white dark:border-zinc-700 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
                                 />
                             </div>
 
@@ -199,22 +200,23 @@ export default function ManageQuestions() {
                                 <>
                                     {Object.keys(editing.options || {}).map((key, index) => (
                                         <div key={index}>
-                                            <Label>Option {key}</Label>
+                                            <Label className="dark:text-gray-200">Option {key}</Label>
                                             <Input
                                                 value={editing.options[key]}
                                                 onChange={(e) => setEditing({
                                                     ...editing,
                                                     options: { ...editing.options, [key]: e.target.value }
                                                 })}
+                                                className="bg-white dark:bg-zinc-900 dark:text-white dark:border-zinc-700 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
                                             />
                                         </div>
                                     ))}
                                     <div>
-                                        <Label>Correct Answer</Label>
+                                        <Label className="dark:text-gray-200">Correct Answer</Label>
                                         <select
                                             value={editing.correctAnswer}
                                             onChange={(e) => setEditing({ ...editing, correctAnswer: Number(e.target.value) })}
-                                            className="border p-2 w-full rounded"
+                                            className="border p-2 w-full rounded bg-white dark:bg-zinc-900 dark:text-white dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
                                         >
                                             {Object.keys(editing.options || {}).map((key, index) => (
                                                 <option key={index} value={index}>
@@ -228,29 +230,32 @@ export default function ManageQuestions() {
 
                             {editing.type === "descriptive" && (
                                 <div>
-                                    <Label>Reference Answer (Optional)</Label>
+                                    <Label className="dark:text-gray-200">Reference Answer (Optional)</Label>
                                     <Textarea
                                         value={editing.correctAnswer}
                                         onChange={(e) => setEditing({ ...editing, correctAnswer: e.target.value })}
+                                        className="bg-white dark:bg-zinc-900 dark:text-white dark:border-zinc-700 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
                                     />
                                 </div>
                             )}
 
                             <div>
-                                <Label>Date</Label>
+                                <Label className="dark:text-gray-200">Date</Label>
                                 <Input
                                     type="date"
                                     value={editing.date}
                                     onChange={(e) => setEditing({ ...editing, date: e.target.value })}
+                                    className="bg-white dark:bg-zinc-900 dark:text-white dark:border-zinc-700 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
                                 />
                             </div>
 
                             <div>
-                                <Label>Time Window</Label>
+                                <Label className="dark:text-gray-200">Time Window</Label>
                                 <Input
                                     value={editing.timeWindow || ""}
                                     onChange={(e) => setEditing({ ...editing, timeWindow: e.target.value })}
                                     placeholder="Optional"
+                                    className="bg-white dark:bg-zinc-900 dark:text-white dark:border-zinc-700 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
                                 />
                             </div>
 
